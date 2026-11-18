@@ -8,6 +8,7 @@ from comment_ledger import make_key, merge, normalize_text
 class CommentLedgerTests(unittest.TestCase):
     def test_normalization_and_fallback_key_are_stable(self):
         left = {
+            "brand_id": "example_brand",
             "platform": "X",
             "parent_post_id": "post-1",
             "author_id": "user-1",
@@ -19,6 +20,7 @@ class CommentLedgerTests(unittest.TestCase):
 
     def test_incremental_merge_and_official_exclusion(self):
         first = {
+            "brand_id": "example_brand",
             "run_at": "2026-11-18T12:15:00+08:00",
             "comments": [
                 {
@@ -26,14 +28,14 @@ class CommentLedgerTests(unittest.TestCase):
                     "parent_post_id": "post-1",
                     "comment_id": "comment-1",
                     "author_id": "user-1",
-                    "body": "My paid agent entered DeepRest unexpectedly.",
+                    "body": "My paid subscription stopped working unexpectedly.",
                     "classification": "P1",
                 },
                 {
                     "platform": "x",
                     "parent_post_id": "post-1",
                     "comment_id": "comment-2",
-                    "author_id": "ilands_ai",
+                    "author_id": "example_brand_official",
                     "body": "We are checking this.",
                     "classification": "reply_optional",
                     "is_official_author": True,
@@ -53,6 +55,7 @@ class CommentLedgerTests(unittest.TestCase):
 
     def test_material_change_is_detected(self):
         base = {
+            "brand_id": "example_brand",
             "run_at": "2026-11-18T12:15:00+08:00",
             "comments": [
                 {
@@ -69,6 +72,22 @@ class CommentLedgerTests(unittest.TestCase):
         base["comments"][0]["classification"] = "P1"
         _, delta = merge(base, ledger)
         self.assertEqual(delta["summary"]["changed"], 1)
+
+    def test_cross_brand_ledger_is_rejected(self):
+        batch = {
+            "brand_id": "brand_a",
+            "comments": [
+                {
+                    "platform": "youtube",
+                    "parent_post_id": "post-3",
+                    "comment_id": "comment-4",
+                    "author_id": "user-3",
+                    "body": "A comment",
+                }
+            ],
+        }
+        with self.assertRaisesRegex(ValueError, "ledger brand_id"):
+            merge(batch, {"brand_id": "brand_b", "records": {}})
 
 
 if __name__ == "__main__":

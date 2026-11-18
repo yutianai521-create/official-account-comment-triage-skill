@@ -39,18 +39,19 @@ def text_hash(value: str) -> str:
 
 
 def make_key(item: dict[str, Any]) -> str:
+    brand_id = str(item.get("brand_id", "")).strip().lower()
     platform = str(item.get("platform", "")).strip().lower()
     post_id = str(item.get("parent_post_id", "")).strip()
     comment_id = str(item.get("comment_id", "")).strip()
     author_id = str(item.get("author_id", "")).strip()
     body = str(item.get("body", ""))
-    if not platform or not post_id or not body.strip():
-        raise ValueError("platform, parent_post_id, and non-empty body are required")
+    if not brand_id or not platform or not post_id or not body.strip():
+        raise ValueError("brand_id, platform, parent_post_id, and non-empty body are required")
     if comment_id:
-        return f"{platform}|{post_id}|{comment_id}"
+        return f"{brand_id}|{platform}|{post_id}|{comment_id}"
     if not author_id:
         raise ValueError("author_id is required when comment_id is missing")
-    return f"{platform}|{post_id}|{author_id}|{text_hash(body)}"
+    return f"{brand_id}|{platform}|{post_id}|{author_id}|{text_hash(body)}"
 
 
 def read_json(path: Path, default: Any) -> Any:
@@ -85,6 +86,7 @@ def validate_classification(value: Any) -> str:
 
 def build_record(item: dict[str, Any], seen_at: str) -> dict[str, Any]:
     record = dict(item)
+    record["brand_id"] = str(item["brand_id"]).strip().lower()
     record["platform"] = str(item["platform"]).strip().lower()
     record["parent_post_id"] = str(item["parent_post_id"]).strip()
     record["comment_id"] = str(item.get("comment_id", "")).strip()
@@ -113,9 +115,15 @@ def merge(input_doc: dict[str, Any], ledger_doc: dict[str, Any]) -> tuple[dict[s
     if not isinstance(comments, list):
         raise ValueError("input JSON must contain a comments array")
     seen_at = str(input_doc.get("run_at") or now_iso())
+    brand_id = str(input_doc.get("brand_id", "")).strip().lower()
+    if not brand_id:
+        raise ValueError("input JSON must contain brand_id")
     existing = ledger_doc.get("records", {})
     if not isinstance(existing, dict):
         raise ValueError("ledger records must be an object keyed by comment_key")
+    ledger_brand_id = str(ledger_doc.get("brand_id", "")).strip().lower()
+    if ledger_brand_id and ledger_brand_id != brand_id:
+        raise ValueError("ledger brand_id does not match the input brand_id")
 
     delta: dict[str, list[dict[str, Any]]] = {
         "new": [],
@@ -129,6 +137,9 @@ def merge(input_doc: dict[str, Any], ledger_doc: dict[str, Any]) -> tuple[dict[s
     for raw in comments:
         if not isinstance(raw, dict):
             raise ValueError("every comments item must be an object")
+        raw = {**raw, "brand_id": str(raw.get("brand_id") or brand_id).strip().lower()}
+        if raw["brand_id"] != brand_id:
+            raise ValueError("comment brand_id must match the input brand_id")
         incoming = build_record(raw, seen_at)
         key = incoming["comment_key"]
         old = records.get(key)
@@ -156,6 +167,7 @@ def merge(input_doc: dict[str, Any], ledger_doc: dict[str, Any]) -> tuple[dict[s
     ]
     new_ledger = {
         "schema_version": 1,
+        "brand_id": brand_id,
         "updated_at": seen_at,
         "records": dict(sorted(records.items())),
     }

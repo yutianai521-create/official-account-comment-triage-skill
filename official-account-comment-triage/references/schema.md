@@ -6,6 +6,7 @@
 
 ```json
 {
+  "brand_id": "example_brand",
   "run_at": "2026-11-18T12:15:00+08:00",
   "comments": [
     {
@@ -34,6 +35,7 @@ Fields through `body` are required. `comment_id` is preferred; without it, `auth
 Each stored record contains:
 
 - `comment_key`
+- `brand_id`
 - `platform`
 - `parent_post_id`
 - `comment_id`
@@ -53,13 +55,13 @@ Allowed classifications are `P0`, `P1`, `reply_optional`, `no_action`, and inter
 When `comment_id` exists:
 
 ```text
-platform|parent_post_id|comment_id
+brand_id|platform|parent_post_id|comment_id
 ```
 
 Otherwise:
 
 ```text
-platform|parent_post_id|author_id|sha256(normalized_body)
+brand_id|platform|parent_post_id|author_id|sha256(normalized_body)
 ```
 
 Normalization applies Unicode NFKC, trims ends, collapses whitespace, and lowercases. The script hashes normalized text without discarding the original body.

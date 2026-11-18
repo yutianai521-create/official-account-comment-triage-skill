@@ -20,7 +20,7 @@ Use for a concrete product or policy issue that needs investigation or explanati
 
 - reproducible product failure or blocked paid functionality;
 - inconsistency between observed behavior and published policy;
-- deletion, DeepRest, restricted-mode, data-handling, or entitlement disputes;
+- deletion, suspension, restricted-mode, data-handling, subscription, entitlement, or other brand-specific policy disputes;
 - a high-visibility negative claim with enough detail to verify;
 - repeated unresolved support requests on the same issue.
 
@@ -42,3 +42,4 @@ Use for praise, emojis, generic reactions, bounty/invite codes, unrelated promot
 - Do not downgrade a concrete complaint because the tone is polite.
 - If the body is truncated or unavailable, classify as `unreviewed` in the audit rather than guessing; `unreviewed` is not a user-facing class.
 - Preserve original language. When a translation is needed, provide an accurate complete translation and retain the original body.
+- Apply brand-specific vocabulary and overrides only from the loaded profile. A product term is context, not an automatic priority trigger.

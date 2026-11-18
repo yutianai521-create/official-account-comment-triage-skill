@@ -1,0 +1,27 @@
+{
+  "brand_id": "example_brand",
+  "brand_name": "Example Brand",
+  "report_language": "zh-CN",
+  "reply_language": "match_comment",
+  "reply_tone": "clear, calm, helpful, and non-defensive",
+  "official_accounts": {
+    "tiktok": ["@example_brand"],
+    "instagram": ["@example_brand"],
+    "youtube": ["@example_brand"],
+    "facebook": ["Example Brand"],
+    "x": ["@example_brand"]
+  },
+  "included_account_types": ["global_official"],
+  "products": ["Example App", "Example Pro"],
+  "priority_overrides": {
+    "P0": ["credible account takeover", "exposed personal data", "unauthorized charge"],
+    "P1": ["paid feature unavailable", "published policy contradicts observed behavior"]
+  },
+  "no_action_patterns": ["invite code only", "bounty code only", "unrelated promotion"],
+  "escalation_owners": {
+    "security": "security team",
+    "privacy": "privacy team",
+    "billing": "support team",
+    "product_issue": "product operations"
+  }
+}
